@@ -1,0 +1,83 @@
+[
+  {
+    "term": "P/E Ratio",
+    "slug": "pe-ratio",
+    "definition": "The Price-to-Earnings (P/E) ratio measures a company's current share price relative to its per-share earnings.",
+    "whatItIndicates": "It indicates how much investors are willing to pay per dollar of earnings. A high P/E suggests high growth expectations, while a low P/E may suggest undervaluation or distress.",
+    "whyItMatters": "It helps investors assess whether a stock is overvalued or undervalue compared to its peers or market averages.",
+    "example": "If a stock trades at ₹3,500 and its annual earnings per share (EPS) is ₹100, its P/E ratio is 35.",
+    "caution": "A low P/E ratio is not always a bargain; it could indicate underlying financial troubles (a value trap)."
+  },
+  {
+    "term": "ROE",
+    "slug": "roe",
+    "definition": "Return on Equity (ROE) measures financial performance calculated by dividing net income by shareholders' equity.",
+    "whatItIndicates": "It indicates how efficiently management is using investors' capital to generate profits.",
+    "whyItMatters": "Higher ROE indicates a company that converts equity investments into revenue effectively without relying heavily on high leverage.",
+    "example": "A company with ₹150 Crore in net income and ₹1,000 Crore in shareholders' equity has an ROE of 15%.",
+    "caution": "High ROE can be artificially inflated by taking on excessive debt."
+  },
+  {
+    "term": "EPS",
+    "slug": "eps",
+    "definition": "Earnings Per Share (EPS) represents the portion of a company's profit allocated to each outstanding share of common stock.",
+    "whatItIndicates": "It indicates the company's profitability per share.",
+    "whyItMatters": "Growing EPS year-over-year is a primary driver of stock price appreciation.",
+    "example": "If net profit is ₹1,000,000 and total shares outstanding are 100,000, the EPS is ₹10.",
+    "caution": "EPS can be boosted temporarily by share buybacks without actual growth in overall revenue."
+  },
+  {
+    "term": "Market Capitalization",
+    "slug": "market-capitalization",
+    "definition": "Market Capitalization (Market Cap) is the total market value of a company's outstanding shares of stock.",
+    "whatItIndicates": "It indicates the overall size and market value of a company.",
+    "whyItMatters": "It helps classify companies into Large-cap, Mid-cap, and Small-cap to evaluate risk and growth potential.",
+    "example": "A company with 10 million shares priced at ₹500 each has a Market Cap of ₹5,000,000,000 (₹500 Crore).",
+    "caution": "Market cap reflects current market price, which can fluctuate wildly due to speculation rather than intrinsic value."
+  },
+  {
+    "term": "Dividend Yield",
+    "slug": "dividend-yield",
+    "definition": "Dividend Yield shows how much a company pays out in dividends each year relative to its stock price.",
+    "whatItIndicates": "It indicates the cash return on investment provided by dividends alone.",
+    "whyItMatters": "Crucial for income-focused investors looking for steady cash flow.",
+    "example": "If a stock trades at ₹1,000 and pays an annual dividend of ₹40 per share, its dividend yield is 4%.",
+    "caution": "An abnormally high dividend yield may indicate a falling stock price and potential dividend cut."
+  },
+  {
+    "term": "Revenue",
+    "slug": "revenue",
+    "definition": "Revenue (Top Line) is the total amount of money brought in by a company through sales of goods or services before expenses.",
+    "whatItIndicates": "It indicates demand for a company's core products or services.",
+    "whyItMatters": "Consistent revenue growth signals expanding market share and adoption.",
+    "example": "An IT services firm invoices clients ₹50,000,000 in a quarter; its quarterly revenue is ₹50,000,000.",
+    "caution": "High revenue does not guarantee profitability if expenses exceed income."
+  },
+  {
+    "term": "Net Profit",
+    "slug": "net-profit",
+    "definition": "Net Profit (Bottom Line) is the net amount earned by a business after subtracting all operating costs, taxes, interest, and expenses from revenue.",
+    "whatItIndicates": "It indicates true overall profitability.",
+    "whyItMatters": "Net profit pays dividends, funds R&D, and builds cash reserves.",
+    "example": "If revenue is ₹10,000,000 and total expenses are ₹7,500,000, net profit is ₹2,500,000.",
+    "caution": "One-time extraordinary gains (e.g. selling property) can temporarily boost net profit for a single quarter."
+  },
+  {
+    "term": "Debt-to-Equity Ratio",
+    "slug": "debt-to-equity-ratio",
+    "definition": "The Debt-to-Equity (D/E) ratio compares a company's total liabilities to its shareholder equity.",
+    "whatItIndicates": "It indicates the degree to which a company is financing its operations through debt versus wholly owned funds.",
+    "whyItMatters": "High D/E ratios indicate high financial risk during economic downturns due to fixed interest obligations.",
+    "example": "A company with ₹500 Crore total debt and ₹1,000 Crore equity has a D/E ratio of 0.5.",
+    "caution": "Acceptable D/E ratios vary significantly by industry (e.g. capital-heavy utilities vs asset-light tech)."
+  },
+  {
+    "term": "52-Week High and Low",
+    "slug": "52-week-high-and-low",
+    "definition": "The 52-Week High and Low is the highest and lowest price at which a stock has traded during the past 52 consecutive weeks.",
+    "whatItIndicates": "It indicates the trading range and volatility of a stock over the past year.",
+    "whyItMatters": "Provides technical context for current stock valuation and momentum.",
+    "example": "A stock trading at ₹3,500 with a 52-week high of ₹3,800 and low of ₹2,800 is trading near its annual peak.",
+    "caution": "Do not buy solely because a stock hits a 52-week low; fundamental weakness may cause further declines."
+  }
+]
