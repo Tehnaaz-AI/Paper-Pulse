@@ -6,7 +6,7 @@ import StockChart from '../components/StockChart';
 import TradeInterface from '../components/TradeInterface';
 import ExplainItPanel from '../components/ExplainItPanel';
 
-const API_BASE = 'import.meta.env.VITE_API_URL';
+const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
 
 const TiltCard = ({ children, style }) => {
   const x = useMotionValue(0);
