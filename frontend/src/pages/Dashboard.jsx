@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import axios from 'axios';
-import { Wallet, Briefcase, TrendingUp } from 'lucide-react';
+import { Wallet, Briefcase, TrendingUp, HelpCircle } from 'lucide-react';
 import StockChart from '../components/StockChart';
 import TradeInterface from '../components/TradeInterface';
 import ExplainItPanel from '../components/ExplainItPanel';
@@ -11,10 +11,11 @@ const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
 const TiltCard = ({ children, style }) => {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const rotateX = useTransform(y, [-100, 100], [10, -10]);
-  const rotateY = useTransform(x, [-100, 100], [-10, 10]);
+  const rotateX = useTransform(y, [-100, 100], [6, -6]);
+  const rotateY = useTransform(x, [-100, 100], [-6, 6]);
 
   function handleMouse(event) {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) return; // Disable 3D tilt on mobile
     const rect = event.currentTarget.getBoundingClientRect();
     x.set(event.clientX - rect.left - rect.width / 2);
     y.set(event.clientY - rect.top - rect.height / 2);
@@ -33,14 +34,16 @@ const TiltCard = ({ children, style }) => {
         rotateX,
         rotateY,
         transformStyle: "preserve-3d",
-        perspective: 1000
+        perspective: 1000,
+        minWidth: 0,
+        width: '100%'
       }}
       onMouseMove={handleMouse}
       onMouseLeave={handleMouseLeave}
       whileHover={{ scale: 1.02 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
     >
-      <div style={{ transform: "translateZ(30px)" }}>
+      <div style={{ transform: "translateZ(20px)", minWidth: 0, width: '100%' }}>
         {children}
       </div>
     </motion.div>
@@ -90,7 +93,7 @@ const Dashboard = () => {
             analysis: {
               trend: mlRes.data.data.trend,
               signal: mlRes.data.data.prediction,
-              reasoning: mlRes.data.data.reasons.join(' ')
+              reasoning: mlRes.data.data.reasons?.join(' ') || ''
             }
           });
           setLoading(false);
@@ -112,7 +115,6 @@ const Dashboard = () => {
     // Fetch portfolio
     axios.get(`${API_BASE}/portfolio`)
       .then(res => {
-        // Backend now returns { holdings, totalValue, totalReturn }
         setPortfolio({
           holdings: res.data.data.holdings || [],
           totalValue: res.data.data.totalValue || 0,
@@ -120,9 +122,10 @@ const Dashboard = () => {
         });
       })
       .catch(console.error);
+
     // Fetch trades
     axios.get(`${API_BASE}/trades`)
-      .then(res => setTradeHistory(res.data.data))
+      .then(res => setTradeHistory(res.data.data || []))
       .catch(console.error);
   };
 
@@ -131,12 +134,12 @@ const Dashboard = () => {
   };
 
   const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, staggerChildren: 0.1 } }
+    hidden: { opacity: 0, y: 15 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.35, staggerChildren: 0.08 } }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 12 },
     visible: { opacity: 1, y: 0 }
   };
 
@@ -147,21 +150,33 @@ const Dashboard = () => {
       initial="hidden"
       animate="visible"
       exit="hidden"
-      style={{ paddingBottom: '2rem' }}
+      style={{ paddingBottom: '2rem', width: '100%', minWidth: 0 }}
     >
-      <motion.div className="header" variants={itemVariants} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h1 style={{ fontSize: '2.5rem', fontWeight: 700, background: 'linear-gradient(90deg, var(--accent-pink), var(--accent-green))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          Trading Command Center
-        </h1>
-        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="btn-outline" onClick={() => setShowExplain(true)}>Explain a Term</motion.button>
+      <motion.div className="page-header" variants={itemVariants}>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <h1 className="page-title">
+            Trading Command Center
+          </h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', margin: '0.2rem 0 0 0' }}>
+            Real-time simulated trading powered by AI analysis
+          </p>
+        </div>
+        <motion.button 
+          whileHover={{ scale: 1.04 }} 
+          whileTap={{ scale: 0.96 }} 
+          className="btn-outline" 
+          onClick={() => setShowExplain(true)}
+          style={{ gap: '0.4rem', flexShrink: 0 }}
+        >
+          <HelpCircle size={16} /> Explain Terms
+        </motion.button>
       </motion.div>
 
       {/* Infinite Marquee Ticker */}
       {tickerData.length > 0 && (
-        <motion.div variants={itemVariants} style={{ marginBottom: '2rem' }}>
-          <div className="marquee-container" style={{ padding: '0.5rem 0' }}>
+        <motion.div variants={itemVariants} style={{ marginBottom: '1.5rem', width: '100%', minWidth: 0 }}>
+          <div className="marquee-container" style={{ padding: '0.25rem 0' }}>
             <div className="marquee-content">
-              {/* Duplicate array multiple times to ensure smooth infinite loop */}
               {[...tickerData, ...tickerData, ...tickerData, ...tickerData].map((t, i) => (
                 <div 
                   key={i} 
@@ -171,21 +186,20 @@ const Dashboard = () => {
                     cursor: 'pointer',
                     display: 'flex', 
                     flexDirection: 'column', 
-                    gap: '0.25rem', 
-                    padding: '1rem', 
-                    minWidth: '180px', 
-                    margin: '0 1rem', 
+                    gap: '0.2rem', 
+                    padding: '0.75rem 0.9rem', 
+                    minWidth: '150px', 
+                    margin: '0 0.5rem', 
                     flexShrink: 0, 
-                    borderLeft: '4px solid var(--accent-pink)',
-                    transition: 'transform 0.2s, box-shadow 0.2s'
+                    borderLeft: selectedStock === t.symbol ? '4px solid var(--accent-pink)' : '4px solid rgba(255,255,255,0.12)',
+                    transition: 'all 0.2s ease',
+                    background: selectedStock === t.symbol ? 'rgba(236, 72, 153, 0.12)' : 'var(--glass-bg)'
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 0 15px rgba(236, 72, 153, 0.4)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'var(--glass-shadow)'; }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <strong style={{ fontSize: '1.1rem', color: 'var(--text-primary)' }}>{t.symbol}</strong>
+                    <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>{t.symbol}</strong>
                   </div>
-                  <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>₹{t.price.toLocaleString()}</span>
+                  <span style={{ fontSize: '1.05rem', fontWeight: 'bold' }}>₹{t.price?.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
                 </div>
               ))}
             </div>
@@ -193,64 +207,98 @@ const Dashboard = () => {
         </motion.div>
       )}
 
-      {/* Top Stats */}
-      <motion.div variants={itemVariants} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '2.5rem' }}>
-        <TiltCard style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          <div style={{ padding: '1rem', background: 'rgba(236, 72, 153, 0.2)', borderRadius: '50%', boxShadow: '0 0 15px rgba(236, 72, 153, 0.3)' }}><Wallet color="var(--accent-pink)" size={28} /></div>
-          <div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.25rem' }}>Virtual Balance</p>
-            <h2 style={{ margin: 0, fontSize: '1.8rem' }}>₹{wallet.balance.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</h2>
+      {/* Top Stats Cards */}
+      <motion.div variants={itemVariants} className="stats-grid">
+        <TiltCard>
+          <div className="stat-card-inner">
+            <div style={{ padding: '0.75rem', background: 'rgba(236, 72, 153, 0.18)', borderRadius: '50%', boxShadow: '0 0 15px rgba(236, 72, 153, 0.25)', flexShrink: 0 }}>
+              <Wallet color="var(--accent-pink)" size={24} />
+            </div>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '0.15rem' }}>Virtual Balance</p>
+              <h2 style={{ margin: 0, fontSize: 'clamp(1.2rem, 2.4vw, 1.6rem)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                ₹{wallet.balance.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+              </h2>
+            </div>
           </div>
         </TiltCard>
         
-        <TiltCard style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          <div style={{ padding: '1rem', background: 'rgba(34, 197, 94, 0.2)', borderRadius: '50%', boxShadow: '0 0 15px rgba(34, 197, 94, 0.3)' }}><Briefcase color="var(--accent-green)" size={28} /></div>
-          <div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.25rem' }}>Portfolio Holdings</p>
-            <h2 style={{ margin: 0, fontSize: '1.8rem' }}>{portfolio.holdings.length} Stocks</h2>
+        <TiltCard>
+          <div className="stat-card-inner">
+            <div style={{ padding: '0.75rem', background: 'rgba(16, 185, 129, 0.18)', borderRadius: '50%', boxShadow: '0 0 15px rgba(16, 185, 129, 0.25)', flexShrink: 0 }}>
+              <Briefcase color="var(--accent-green)" size={24} />
+            </div>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '0.15rem' }}>Holdings</p>
+              <h2 style={{ margin: 0, fontSize: 'clamp(1.2rem, 2.4vw, 1.6rem)' }}>
+                {portfolio.holdings.length} {portfolio.holdings.length === 1 ? 'Stock' : 'Stocks'}
+              </h2>
+            </div>
           </div>
         </TiltCard>
         
-        <TiltCard style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          <div style={{ 
-            padding: '1rem', 
-            background: portfolio.totalReturn >= 0 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(244, 63, 94, 0.2)', 
-            borderRadius: '50%', 
-            boxShadow: portfolio.totalReturn >= 0 ? '0 0 15px rgba(16, 185, 129, 0.3)' : '0 0 15px rgba(244, 63, 94, 0.3)' 
-          }}>
-            <TrendingUp color={portfolio.totalReturn >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'} size={28} />
-          </div>
-          <div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.25rem' }}>Total P/L</p>
-            <h2 style={{ margin: 0, fontSize: '1.8rem', color: (portfolio.totalReturn >= 0) ? 'var(--accent-green)' : 'var(--accent-red)', textShadow: `0 0 10px ${(portfolio.totalReturn >= 0) ? 'rgba(16, 185, 129, 0.4)' : 'rgba(244, 63, 94, 0.4)'}` }}>
-              {portfolio.totalReturn !== undefined ? `${portfolio.totalReturn >= 0 ? '+' : ''}₹${portfolio.totalReturn.toLocaleString('en-IN', { maximumFractionDigits: 2 })}` : '-'}
-            </h2>
+        <TiltCard>
+          <div className="stat-card-inner">
+            <div style={{ 
+              padding: '0.75rem', 
+              background: portfolio.totalReturn >= 0 ? 'rgba(16, 185, 129, 0.18)' : 'rgba(244, 63, 94, 0.18)', 
+              borderRadius: '50%', 
+              boxShadow: portfolio.totalReturn >= 0 ? '0 0 15px rgba(16, 185, 129, 0.25)' : '0 0 15px rgba(244, 63, 94, 0.25)',
+              flexShrink: 0
+            }}>
+              <TrendingUp color={portfolio.totalReturn >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'} size={24} />
+            </div>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '0.15rem' }}>Total P/L</p>
+              <h2 style={{ 
+                margin: 0, 
+                fontSize: 'clamp(1.2rem, 2.4vw, 1.6rem)', 
+                color: (portfolio.totalReturn >= 0) ? 'var(--accent-green)' : 'var(--accent-red)', 
+                textShadow: `0 0 10px ${(portfolio.totalReturn >= 0) ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)'}`,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}>
+                {portfolio.totalReturn !== undefined ? `${portfolio.totalReturn >= 0 ? '+' : ''}₹${portfolio.totalReturn.toLocaleString('en-IN', { maximumFractionDigits: 2 })}` : '-'}
+              </h2>
+            </div>
           </div>
         </TiltCard>
       </motion.div>
 
-      <motion.div variants={itemVariants} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
+      {/* Main Grid: Chart + Trade Interface */}
+      <motion.div variants={itemVariants} className="dashboard-main-grid">
         {/* Chart Section */}
-        <div className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ margin: 0, fontSize: '1.5rem' }}>Market Chart</h3>
-            <select className="input-field" value={selectedStock} onChange={(e) => setSelectedStock(e.target.value)} style={{ minWidth: '150px' }}>
+        <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0, width: '100%' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+            <div style={{ minWidth: 0 }}>
+              <h3 style={{ margin: 0, fontSize: '1.2rem' }}>Market Performance</h3>
+              <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                30-day historical pricing for {selectedStock}
+              </p>
+            </div>
+            <select 
+              className="input-field" 
+              value={selectedStock} 
+              onChange={(e) => setSelectedStock(e.target.value)} 
+              style={{ minWidth: '130px' }}
+            >
               {stocks.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
           {loading ? (
-            <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }} style={{ width: 40, height: 40, border: '3px solid rgba(255,255,255,0.1)', borderTopColor: 'var(--accent-pink)', borderRadius: '50%' }} />
+            <div style={{ height: '260px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }} style={{ width: 34, height: 34, border: '3px solid rgba(255,255,255,0.1)', borderTopColor: 'var(--accent-pink)', borderRadius: '50%' }} />
             </div>
           ) : (
-            <div style={{ width: '100%', overflow: 'hidden', borderRadius: '0.5rem' }}>
+            <div style={{ width: '100%', minWidth: 0, overflow: 'hidden', borderRadius: '0.5rem' }}>
               <StockChart data={stockData?.history || []} />
             </div>
           )}
         </div>
 
-        {/* Action Section */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        {/* Action Section: Trade Interface */}
+        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, width: '100%' }}>
           {stockData && (
             <TradeInterface stockData={stockData} onTrade={handleTradeComplete} />
           )}
@@ -258,34 +306,40 @@ const Dashboard = () => {
       </motion.div>
 
       {/* Portfolio and Trade History Tables */}
-      <motion.div variants={itemVariants} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginTop: '2.5rem' }}>
-        
+      <motion.div variants={itemVariants} className="dashboard-tables-grid">
         {/* Portfolio Table */}
-        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
-          <h3 style={{ margin: '0 0 1rem 0' }}>Portfolio Holdings</h3>
-          <div style={{ overflowX: 'auto', flex: 1 }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', minWidth: 0, width: '100%' }}>
+          <div style={{ marginBottom: '0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Portfolio Holdings</h3>
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>{portfolio.holdings.length} Positions</span>
+          </div>
+          <div className="table-responsive">
+            <table>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                  <th style={{ padding: '0.75rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Stock</th>
-                  <th style={{ padding: '0.75rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Qty</th>
-                  <th style={{ padding: '0.75rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Avg. Price</th>
-                  <th style={{ padding: '0.75rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>P/L</th>
+                  <th style={{ padding: '0.65rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.82rem' }}>Stock</th>
+                  <th style={{ padding: '0.65rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.82rem' }}>Qty</th>
+                  <th style={{ padding: '0.65rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.82rem' }}>Avg. Price</th>
+                  <th style={{ padding: '0.65rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.82rem' }}>P/L</th>
                 </tr>
               </thead>
               <tbody>
                 {portfolio.holdings.length === 0 ? (
-                  <tr><td colSpan="4" style={{ padding: '1.5rem 0', textAlign: 'center', color: 'var(--text-secondary)' }}>No holdings yet. Execute a trade to see them here!</td></tr>
+                  <tr>
+                    <td colSpan="4" style={{ padding: '1.75rem 0.5rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                      No active holdings. Execute a trade to see your assets!
+                    </td>
+                  </tr>
                 ) : (
                   portfolio.holdings.map((h, i) => {
                     const pl = (h.currentValue || 0) - (h.investedAmount || 0);
                     const plColor = pl >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
                     return (
-                      <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <td style={{ padding: '0.75rem 0', fontWeight: 'bold', color: 'var(--accent-pink)' }}>{h.symbol}</td>
-                        <td style={{ padding: '0.75rem 0' }}>{h.quantity}</td>
-                        <td style={{ padding: '0.75rem 0' }}>₹{h.averagePurchasePrice?.toLocaleString('en-IN', { maximumFractionDigits: 2 }) || h.averagePurchasePrice}</td>
-                        <td style={{ padding: '0.75rem 0', color: plColor }}>
+                      <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                        <td style={{ padding: '0.65rem 0.5rem', fontWeight: 600, color: 'var(--accent-pink)' }}>{h.symbol}</td>
+                        <td style={{ padding: '0.65rem 0.5rem' }}>{h.quantity}</td>
+                        <td style={{ padding: '0.65rem 0.5rem' }}>₹{h.averagePurchasePrice?.toLocaleString('en-IN', { maximumFractionDigits: 2 }) || h.averagePurchasePrice}</td>
+                        <td style={{ padding: '0.65rem 0.5rem', color: plColor, fontWeight: 500 }}>
                           {pl >= 0 ? '+' : ''}₹{pl.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
                         </td>
                       </tr>
@@ -298,38 +352,45 @@ const Dashboard = () => {
         </div>
 
         {/* Recent Trades Table */}
-        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
-          <h3 style={{ margin: '0 0 1rem 0' }}>Recent Trades</h3>
-          <div style={{ overflowX: 'auto', flex: 1, maxHeight: '300px' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', minWidth: 0, width: '100%' }}>
+          <div style={{ marginBottom: '0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Recent Trades</h3>
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>{tradeHistory.length} Recorded</span>
+          </div>
+          <div className="table-responsive" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+            <table>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                  <th style={{ padding: '0.75rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Date</th>
-                  <th style={{ padding: '0.75rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Stock</th>
-                  <th style={{ padding: '0.75rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Action</th>
-                  <th style={{ padding: '0.75rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Qty</th>
-                  <th style={{ padding: '0.75rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Price</th>
-                  <th style={{ padding: '0.75rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>P/L</th>
+                  <th style={{ padding: '0.65rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.82rem' }}>Date</th>
+                  <th style={{ padding: '0.65rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.82rem' }}>Stock</th>
+                  <th style={{ padding: '0.65rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.82rem' }}>Action</th>
+                  <th style={{ padding: '0.65rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.82rem' }}>Qty</th>
+                  <th style={{ padding: '0.65rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.82rem' }}>Price</th>
+                  <th style={{ padding: '0.65rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.82rem' }}>P/L</th>
                 </tr>
               </thead>
               <tbody>
                 {tradeHistory.length === 0 ? (
-                  <tr><td colSpan="6" style={{ padding: '1.5rem 0', textAlign: 'center', color: 'var(--text-secondary)' }}>No trades executed</td></tr>
+                  <tr>
+                    <td colSpan="6" style={{ padding: '1.75rem 0.5rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                      No trades executed yet.
+                    </td>
+                  </tr>
                 ) : (
                   tradeHistory.map((t, i) => (
-                    <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <td style={{ padding: '0.75rem 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                    <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <td style={{ padding: '0.65rem 0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                         {new Date(t.timestamp).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
                       </td>
-                      <td style={{ padding: '0.75rem 0', fontWeight: 'bold', color: 'var(--accent-pink)' }}>
+                      <td style={{ padding: '0.65rem 0.5rem', fontWeight: 600, color: 'var(--accent-pink)' }}>
                         {t.symbol}
                       </td>
-                      <td style={{ padding: '0.75rem 0', color: t.action === 'BUY' ? 'var(--accent-green)' : (t.action === 'SELL' ? 'var(--accent-red)' : 'var(--text-secondary)'), fontWeight: 'bold' }}>
+                      <td style={{ padding: '0.65rem 0.5rem', color: t.action === 'BUY' ? 'var(--accent-green)' : (t.action === 'SELL' ? 'var(--accent-red)' : 'var(--text-secondary)'), fontWeight: 'bold' }}>
                         {t.action}
                       </td>
-                      <td style={{ padding: '0.75rem 0' }}>{t.quantity}</td>
-                      <td style={{ padding: '0.75rem 0' }}>₹{t.price?.toLocaleString('en-IN', { maximumFractionDigits: 2 }) || t.price}</td>
-                      <td style={{ padding: '0.75rem 0', color: t.action === 'SELL' && t.profitLoss != null ? (t.profitLoss >= 0 ? 'var(--accent-green)' : 'var(--accent-red)') : 'var(--text-primary)' }}>
+                      <td style={{ padding: '0.65rem 0.5rem' }}>{t.quantity}</td>
+                      <td style={{ padding: '0.65rem 0.5rem' }}>₹{t.price?.toLocaleString('en-IN', { maximumFractionDigits: 2 }) || t.price}</td>
+                      <td style={{ padding: '0.65rem 0.5rem', color: t.action === 'SELL' && t.profitLoss != null ? (t.profitLoss >= 0 ? 'var(--accent-green)' : 'var(--accent-red)') : 'var(--text-primary)' }}>
                         {t.action === 'SELL' && t.profitLoss != null ? `${t.profitLoss >= 0 ? '+' : ''}₹${t.profitLoss.toLocaleString('en-IN', { maximumFractionDigits: 2 })}` : '--'}
                       </td>
                     </tr>
@@ -339,12 +400,11 @@ const Dashboard = () => {
             </table>
           </div>
         </div>
-
       </motion.div>
 
       {/* Educational Disclaimer */}
-      <motion.div variants={itemVariants} style={{ marginTop: '3rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-        <p><strong>Educational only - not financial advice. No real money is involved.</strong></p>
+      <motion.div variants={itemVariants} style={{ marginTop: '2rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.8rem', opacity: 0.8 }}>
+        <p><strong>Educational Trading Simulation:</strong> Real-time and simulated analytics. No actual capital is risked.</p>
       </motion.div>
 
       {showExplain && <ExplainItPanel onClose={() => setShowExplain(false)} />}
